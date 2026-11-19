@@ -1,0 +1,4 @@
+# Local junk, never shipped
+*.zip
+.DS_Store
+Thumbs.db
