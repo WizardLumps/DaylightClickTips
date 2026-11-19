@@ -1,14 +1,13 @@
 # Wiz's ClickTips (DaylightUI Plugin)
 
-A plugin for **DaylightUI** on **WoW: Forever**. Hover a unit frame and its tooltip lists
+A plugin for **DaylightUI** on **WoW: Forever** (tested with DaylightUI 1.9.5). Hover a unit frame and its tooltip lists
 what each mouse click casts, HealBot-style:
 
-```
-Clicks (Shift)
-Left: Flash Heal (Rank 3)        307-353  125
-Right: Power Word: Shield         absorbs 48  80
-Middle: Dispel Magic             out of range
-```
+![Tooltip with the click lines](docs/screenshots/tooltip.png)
+
+Hold a modifier and the lines switch to that set, here Shift for lower ranks:
+
+![The same tooltip with Shift held](docs/screenshots/tooltip-shift.png)
 
 - One line per mouse button, for the Shift / Ctrl / Alt you're holding right now. Press or
   release a modifier and the lines change.
@@ -25,6 +24,13 @@ Middle: Dispel Magic             out of range
 
 ## Options
 In `/dui`: the **ClickTips** plugin page, or **Unit Frames > Click-casting > Tooltips**.
+
+![The ClickTips page in /dui](docs/screenshots/options.png)
+
+Heal amounts and mana cost can be turned off for a shorter tooltip:
+
+![Heal amounts and mana cost off](docs/screenshots/options-switches-off.png)
+
 Or type:
 - `/clicktips` - version and current switches
 - `/clicktips tip` - click lines on or off
