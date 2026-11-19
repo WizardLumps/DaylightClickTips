@@ -1,0 +1,8 @@
+# CurseForge packager settings: the zip holds one DaylightClickTips folder with only
+# what the game needs. Screenshots (docs) and git files stay on GitHub.
+package-as: DaylightClickTips
+
+ignore:
+    - docs
+    - .gitignore
+    - .pkgmeta

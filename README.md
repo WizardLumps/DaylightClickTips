@@ -1,7 +1,11 @@
 # Wiz's ClickTips (DaylightUI Plugin)
 
-A plugin for **DaylightUI** on **WoW: Forever** (tested with DaylightUI 1.9.5). Hover a unit frame and its tooltip lists
-what each mouse click casts, HealBot-style:
+**Your click-cast spells, right in the tooltip.**
+
+A plugin for **DaylightUI** on **WoW: Forever** (tested with DaylightUI 1.9.5). Hover a party
+or raid frame to see the spell each mouse button casts through DaylightUI's click-casting,
+HealBot-style. Hold Shift, Ctrl or Alt and the list switches to that modifier's spells
+instantly:
 
 ![Tooltip with the click lines](docs/screenshots/tooltip.png)
 
@@ -49,6 +53,8 @@ MIT (see `LICENSE`). Made by WizardLumps. Not affiliated with DaylightUI; it nee
 DaylightUI installed and holds none of its code or art.
 
 ## Changelog
+- v1.0.2 - CurseForge project ID in the TOC, and packaging settings (.pkgmeta) for
+  CurseForge's automatic releases.
 - v1.0.1 - Its own icon: a tooltip bubble with a heal cross.
 - v1.0.0 - First release: click lines in unit frame tooltips, heal amounts, mana cost,
   options in /dui and /clicktips.

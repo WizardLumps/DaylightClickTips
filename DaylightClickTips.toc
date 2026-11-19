@@ -4,7 +4,8 @@
 ## Notes: A plugin for Daylight UI: hover a unit frame and its tooltip lists what each mouse click casts with the Shift / Ctrl / Alt you hold, colored by range, mana and cooldown, with each spell's heal amount and mana cost.
 ## Author: WizardLumps
 ## X-License: MIT
-## Version: v1.0.1
+## X-Curse-Project-ID: 1816030
+## Version: v1.0.2
 ## Dependencies: DaylightUI
 ## SavedVariables: DaylightClickTipsDB
 
