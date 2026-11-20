@@ -5,7 +5,7 @@
 ## Author: WizardLumps
 ## X-License: MIT
 ## X-Curse-Project-ID: 1816030
-## Version: v1.1.0
+## Version: v1.1.1
 ## Dependencies: DaylightUI
 ## SavedVariables: DaylightClickTipsDB
 

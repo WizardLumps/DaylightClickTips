@@ -24,6 +24,7 @@ ns.DEFAULTS = {
     -- Which frames get the lines
     showParty = true, showRaid = true, showPets = true,
     showPlayer = true, showTarget = true, showFocus = true, showOther = true,
+    showEnemies = false,  -- also on frames whose unit is an enemy (your enemy target)
     -- Colors { r, g, b }
     colReady = { 1, 1, 1 },
     colRange = { 1, 0.5, 0.1 },

@@ -37,7 +37,8 @@ In `/dui`: the **ClickTips** plugin page, or **Unit Frames > Click-casting > Too
 - **Lines:** spell ranks, short button names (L / R / M / B4 / B5), the "Clicks" heading,
   hide DaylightUI's default Left = Target / Right = Unit menu (a click you set yourself,
   like Ctrl + Left = Target, still shows), only while holding a modifier, hide in combat.
-- **Show on:** party, raid, party pets, player, target, focus, other frames.
+- **Show on:** party, raid, party pets, player, target, focus, other frames, and enemies
+  (off by default, so your target frame shows the lines for friends only).
 - **Colors:** ready, out of range, not enough mana, on cooldown, invalid target, heal amount,
   mana cost.
 
@@ -62,6 +63,8 @@ MIT (see `LICENSE`). Made by WizardLumps. Not affiliated with DaylightUI; it nee
 DaylightUI installed and holds none of its code or art.
 
 ## Changelog
+- v1.1.1 - New "Enemies too" switch under Show on, off by default: no click lines on enemy
+  units, like the mob you're targeting. Release notes on CurseForge now come from CHANGELOG.md.
 - v1.1.0 - Its own icon in the /dui sidebar. New settings: spell icons, casts left, spell ranks, short button names, the
   "Clicks" heading, hide default clicks, only while holding a modifier, hide in combat,
   which frames show the lines, and every color. Spells that can't go on the hovered unit

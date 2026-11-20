@@ -69,6 +69,8 @@ local function frameItems()
         toggle("showTarget", "Target", "Your target's frame."),
         toggle("showFocus", "Focus", "Your focus's frame."),
         toggle("showOther", "Other frames", "Pet, target of target, arena and the rest."),
+        toggle("showEnemies", "Enemies too",
+            "Also when the frame's unit is an enemy, like your hostile target. Off: friendly units only, so your target frame shows the lines for friends but not for the mob you're fighting."),
     }
 end
 

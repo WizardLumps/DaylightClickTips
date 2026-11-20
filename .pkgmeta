@@ -2,6 +2,12 @@
 # what the game needs. Screenshots (docs) and git files stay on GitHub.
 package-as: DaylightClickTips
 
+# The file's changelog on CurseForge: this release's notes from CHANGELOG.md
+# (the README keeps the full history).
+manual-changelog:
+    filename: CHANGELOG.md
+    markup-type: markdown
+
 ignore:
     - docs
     - .gitignore

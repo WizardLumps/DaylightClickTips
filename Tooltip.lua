@@ -66,9 +66,16 @@ local function hex(color, text) return "|c" .. color .. text .. "|r" end
 local UNIT_SETTING = { player = "showPlayer", target = "showTarget", focus = "showFocus" }
 local KIND_SETTING = { party = "showParty", raid = "showRaid", partypet = "showPets" }
 local function frameWanted(owner)
+    local unit = owner:GetAttribute("unit")
     local key = KIND_SETTING[frames[owner]]
-    if not key then key = UNIT_SETTING[owner:GetAttribute("unit")] or "showOther" end
-    return ns.db[key] ~= false
+    if not key then key = UNIT_SETTING[unit] or "showOther" end
+    if ns.db[key] == false then return false end
+    -- An enemy (your hostile target): healing lines would only say "invalid target".
+    if not ns.db.showEnemies and type(unit) == "string" then
+        local enemy = call(UnitCanAttack, "player", unit)
+        if not secret(enemy) and enemy == true then return false end
+    end
+    return true
 end
 
 -- "alt-ctrl-shift-" -> "Shift + Ctrl + Alt"
