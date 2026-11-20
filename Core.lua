@@ -9,11 +9,36 @@ function ns.Print(msg)
 end
 
 -- Saved account-wide (DaylightClickTipsDB).
-local DEFAULTS = {
-    enabled = true,   -- add the click lines to unit frame tooltips
-    amounts = true,   -- heal / absorb amounts from each spell's description
-    cost = true,      -- mana cost
+ns.DEFAULTS = {
+    enabled = true,       -- add the click lines to unit frame tooltips
+    amounts = true,       -- heal / absorb amounts from each spell's description
+    cost = true,          -- mana cost
+    casts = false,        -- how many casts your current mana pays for ("x12")
+    icons = true,         -- the spell's icon at the start of its line
+    rank = true,          -- "(Rank 3)" after the name
+    short = false,        -- "L:" instead of "Left:"
+    header = true,        -- the "Clicks" heading over the lines
+    hideDefaults = true,  -- hide DaylightUI's default Target / Unit menu clicks
+    holdOnly = false,     -- lines only while Shift, Ctrl or Alt is held
+    hideCombat = false,   -- no lines in combat
+    -- Which frames get the lines
+    showParty = true, showRaid = true, showPets = true,
+    showPlayer = true, showTarget = true, showFocus = true, showOther = true,
+    -- Colors { r, g, b }
+    colReady = { 1, 1, 1 },
+    colRange = { 1, 0.5, 0.1 },
+    colNoMana = { 1, 0.2, 0.2 },
+    colCooldown = { 1, 0.2, 0.2 },
+    colInvalid = { 0.6, 0.6, 0.6 },
+    colAmount = { 0.25, 0.88, 0.25 },
+    colCost = { 0.37, 0.66, 1 },
 }
+
+local function copy(v)
+    if type(v) ~= "table" then return v end
+    return { v[1], v[2], v[3] }
+end
+ns.Copy = copy
 
 -- Events --------------------------------------------------------------------
 local frame, handlers = CreateFrame("Frame"), {}
@@ -35,22 +60,28 @@ ns.OnEvent("ADDON_LOADED", function(_, name)
     if name ~= ADDON then return end
     if type(DaylightClickTipsDB) ~= "table" then DaylightClickTipsDB = {} end
     local db = DaylightClickTipsDB
-    for k, v in pairs(DEFAULTS) do
-        if db[k] == nil then db[k] = v end
+    for k, v in pairs(ns.DEFAULTS) do
+        if db[k] == nil or type(db[k]) ~= type(v) then db[k] = copy(v) end
     end
     ns.db = db
 end)
 
 -- Settings ------------------------------------------------------------------
 -- Changes one setting and tells DaylightUI, so its options window (/dui)
--- redraws the switch.
+-- redraws the row. Switches save true/false, colors { r, g, b }.
 function ns.Set(key, value)
     if not ns.db then return end
-    ns.db[key] = value and true or false
+    if type(ns.DEFAULTS[key]) == "table" then
+        if type(value) ~= "table" then return end
+        ns.db[key] = { tonumber(value[1] or value.r) or 1, tonumber(value[2] or value.g) or 1, tonumber(value[3] or value.b) or 1 }
+    else
+        ns.db[key] = value and true or false
+    end
     local DUI = DaylightUI
     if DUI and type(DUI.Fire) == "function" then
         pcall(DUI.Fire, "SettingChanged", ADDON, key, ns.db[key])
     end
+    if ns.Refresh then ns.Refresh() end
 end
 
 -- /clicktips ----------------------------------------------------------------
@@ -60,7 +91,16 @@ local TOGGLES = {
     tip = { "enabled", "click lines in tooltips" },
     amounts = { "amounts", "heal amounts" },
     cost = { "cost", "mana cost" },
+    casts = { "casts", "casts left on your mana" },
+    icons = { "icons", "spell icons" },
+    rank = { "rank", "spell ranks" },
+    short = { "short", "short button names" },
+    header = { "header", "\"Clicks\" heading" },
+    defaults = { "hideDefaults", "hide default Target / Unit menu clicks" },
+    hold = { "holdOnly", "only while holding Shift / Ctrl / Alt" },
+    combat = { "hideCombat", "hide in combat" },
 }
+local ORDER = { "tip", "amounts", "cost", "casts", "icons", "rank", "short", "header", "defaults", "hold", "combat" }
 
 SLASH_DAYLIGHTCLICKTIPS1 = "/clicktips"
 SlashCmdList.DAYLIGHTCLICKTIPS = function(msg)
@@ -73,8 +113,10 @@ SlashCmdList.DAYLIGHTCLICKTIPS = function(msg)
         ns.Print(t[2] .. ": " .. onOff(db[t[1]]))
         return
     end
-    ns.Print(("%s - tooltip lines %s, amounts %s, cost %s"):format(ns.version,
-        onOff(db.enabled), onOff(db.amounts), onOff(db.cost)))
-    ns.Print("/clicktips tip | amounts | cost (switch each on or off)")
-    ns.Print("Same switches in /dui: Unit Frames > Click-casting, or the ClickTips plugin page.")
+    ns.Print(ns.version)
+    for _, word in ipairs(ORDER) do
+        local s = TOGGLES[word]
+        print(("  /clicktips %s - %s: %s"):format(word, s[2], onOff(db[s[1]])))
+    end
+    ns.Print("Frames and colors: /dui, the ClickTips plugin page.")
 end
