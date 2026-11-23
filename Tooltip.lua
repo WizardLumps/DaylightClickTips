@@ -1,7 +1,8 @@
 -- Wiz's ClickTips: click lines on DaylightUI unit tooltips, like HealBot's: while you hover a
 -- frame, one line per mouse button saying what that click does with the
 -- modifiers you hold right now; press or release Shift/Ctrl/Alt and the
--- lines change. Spells are colored (each color can be changed in /dui):
+-- lines change. Or (Show all modifiers) every bound set at once, grouped
+-- under its modifier, so you needn't hold anything. Spells are colored (each color can be changed in /dui):
 --   white  ready and in range
 --   orange out of range
 --   red    not enough mana, or on cooldown
@@ -78,13 +79,13 @@ local function frameWanted(owner)
     return true
 end
 
--- "alt-ctrl-shift-" -> "Shift + Ctrl + Alt"
-local function modText(prefix)
+-- "alt-ctrl-shift-" -> "Shift + Ctrl + Alt" (or joined with sep)
+local function modText(prefix, sep)
     local parts = {}
     if prefix:find("shift%-") then parts[#parts + 1] = "Shift" end
     if prefix:find("ctrl%-") then parts[#parts + 1] = "Ctrl" end
     if prefix:find("alt%-") then parts[#parts + 1] = "Alt" end
-    return table.concat(parts, " + ")
+    return table.concat(parts, sep or " + ")
 end
 
 -- A spell attribute (name = top rank, or a spell id) -> spell id
@@ -177,33 +178,50 @@ local function inCombat()
     return call(InCombatLockdown) == true or call(UnitAffectingCombat, "player") == true
 end
 
--- What the lines for one frame would say, without touching the tooltip:
--- the header and one row per bound button, plus a short text "signature" of
--- all of it. Comparing signatures tells the ticker whether anything changed.
+-- Every modifier set, in the order the all-modifiers list shows them.
+-- The prefixes are written the way the game's secure buttons spell them.
+local PREFIXES = { "", "shift-", "ctrl-", "alt-", "ctrl-shift-", "alt-shift-", "alt-ctrl-", "alt-ctrl-shift-" }
+
+-- A click attribute for one modifier and button, read straight off the
+-- frame: the exact one ("shift-type1"), then the "*" wildcards the secure
+-- buttons also accept ("*type1", "shift-type*", "*type*").
+local function attr(owner, name, prefix, suffix)
+    local v = owner:GetAttribute(prefix .. name .. suffix)
+    if v == nil then v = owner:GetAttribute("*" .. name .. suffix) end
+    if v == nil then v = owner:GetAttribute(prefix .. name .. "*") end
+    if v == nil then v = owner:GetAttribute("*" .. name .. "*") end
+    return v
+end
+
+-- One row per bound button for one modifier prefix.
 -- Each row: { left, right, r, g, b, rr, rg, rb } (right may be nil).
-local function buildRows(owner)
+-- all: the all-modifiers list. Then a modifier set only lists clicks set
+-- for exactly that modifier (a "*" wildcard click would repeat in every
+-- group), and numbers only when "Amounts in the full list" is on.
+local function rowsFor(owner, unit, prefix, all)
     local db = ns.db
-    if not (db and db.enabled) then return nil, nil, "off" end
-    if type(SecureButton_GetModifiedAttribute) ~= "function" then return nil, nil, "none" end
-    if not frameWanted(owner) then return nil, nil, "frame off" end
-    if db.hideCombat and inCombat() then return nil, nil, "combat" end
-    local prefix = type(SecureButton_GetModifierPrefix) == "function" and SecureButton_GetModifierPrefix(owner) or ""
-    if db.holdOnly and prefix == "" then return nil, nil, "no modifier" end
-    local unit = owner:GetAttribute("unit")
+    local numbers = not all or db.allNumbers
     local rows = {}
     for _, b in ipairs(BUTTONS) do
-        local button = b[1]
+        local button, suffix = b[1], b[4]
         local label = db.short and b[3] or b[2]
-        local kind = SecureButton_GetModifiedAttribute(owner, "type", button)
+        local own = owner:GetAttribute(prefix .. "type" .. suffix) ~= nil
+        local kind
+        if not all then
+            kind = SecureButton_GetModifiedAttribute(owner, "type", button)   -- the modifiers held now
+        elseif prefix == "" or own then
+            kind = attr(owner, "type", prefix, suffix)
+        end
         if type(kind) == "string" and kind ~= "" then
             if kind == "spell" then
-                local raw = SecureButton_GetModifiedAttribute(owner, "spell", button)
+                local raw = all and attr(owner, "spell", prefix, suffix)
+                    or SecureButton_GetModifiedAttribute(owner, "spell", button)
                 local id = spellId(raw)
                 if id then
                     local colorKey, note = state(id, unit)
                     local r, g, bl = col(colorKey)
                     local right = note
-                    if not right then
+                    if not right and numbers then
                         local bits = {}
                         local a = db.amounts and amount(id)
                         if a then bits[#bits + 1] = hex(hexOf("colAmount"), a) end
@@ -223,14 +241,77 @@ local function buildRows(owner)
                 -- DaylightUI's default Target / Unit menu come from "*typeN" on
                 -- every frame. One set on purpose for this exact click (like
                 -- Ctrl+Left = Target) has its own "ctrl-type1", and still shows.
-                local own = owner:GetAttribute(prefix .. "type" .. b[4]) ~= nil
-                if not (db.hideDefaults and DEFAULT_ACTION[kind] and not own) then
+                -- An "Action bar key" (the click handed to your keybinding, like
+                -- a Mouse 5 macro) shows with no modifier held; under a
+                -- modifier it's only that same key again, so it's left out
+                -- unless set for exactly that modifier.
+                local passOn = kind == "macro" and prefix ~= "" and not own
+                if not (db.hideDefaults and (DEFAULT_ACTION[kind] or passOn) and not own) then
                     rows[#rows + 1] = { label .. ": " .. (ACTION_TEXT[kind] or kind), nil, 0.7, 0.85, 1 }
                 end
             end
         end
     end
-    local head = db.header and ("Clicks" .. (prefix ~= "" and (" (" .. modText(prefix) .. ")") or "")) or nil
+    return rows
+end
+
+-- Dims a row (a group you aren't holding, in the all-modifiers list).
+local DIM = 0.55
+local function dim(row)
+    for i = 3, 8 do if row[i] then row[i] = row[i] * DIM end end
+end
+
+-- The all-modifiers list: each modifier set with something bound, under
+-- its name ("Shift", "Ctrl + Shift"); plain clicks first, with no name.
+-- Holding a modifier keeps its group bright (its name green) and dims the others.
+-- A group's name row is { text, nil, r, g, b }.
+local function allRows(owner, unit, held)
+    local rows = {}
+    for _, prefix in ipairs(PREFIXES) do
+        local group = rowsFor(owner, unit, prefix, true)
+        if #group > 0 then
+            local faded = held ~= "" and prefix ~= held
+            if prefix ~= "" then
+                -- Joined with "·", not "+": Daylight UI's card reads a short
+                -- "Shift + Alt" line as a key hint and repaints it in its own
+                -- colors, so it wouldn't match the other group names.
+                -- The group you hold: its name in the "Held modifier" color.
+                local r, g, b = LABEL[1], LABEL[2], LABEL[3]
+                if prefix == held then r, g, b = col("colHeld") end
+                local name = { modText(prefix, " · "), nil, r, g, b }
+                if faded then dim(name) end
+                rows[#rows + 1] = name
+            end
+            for _, row in ipairs(group) do
+                if prefix ~= "" then row[1] = "   " .. row[1] end
+                if faded then dim(row) end
+                rows[#rows + 1] = row
+            end
+        end
+    end
+    return rows
+end
+
+-- What the lines for one frame would say, without touching the tooltip:
+-- the header and the rows, plus a short text "signature" of all of it.
+-- Comparing signatures tells the ticker whether anything changed.
+local function buildRows(owner)
+    local db = ns.db
+    if not (db and db.enabled) then return nil, nil, "off" end
+    if type(SecureButton_GetModifiedAttribute) ~= "function" then return nil, nil, "none" end
+    if not frameWanted(owner) then return nil, nil, "frame off" end
+    if db.hideCombat and inCombat() then return nil, nil, "combat" end
+    local prefix = type(SecureButton_GetModifierPrefix) == "function" and SecureButton_GetModifierPrefix(owner) or ""
+    local unit = owner:GetAttribute("unit")
+    local rows, head
+    if db.allMods then
+        rows = allRows(owner, unit, prefix)
+        head = db.header and "Clicks" or nil
+    else
+        if db.holdOnly and prefix == "" then return nil, nil, "no modifier" end
+        rows = rowsFor(owner, unit, prefix, false)
+        head = db.header and ("Clicks" .. (prefix ~= "" and (" (" .. modText(prefix) .. ")") or "")) or nil
+    end
     local sig = { head or "-" }
     for _, row in ipairs(rows) do
         sig[#sig + 1] = ("%s|%s|%.2f%.2f%.2f"):format(row[1], row[2] or "", row[3], row[4], row[5])
@@ -248,7 +329,7 @@ local function addLines(tt, owner)
     tt:AddLine(" ")
     if head then tt:AddLine(head, LABEL[1], LABEL[2], LABEL[3]) end
     for _, row in ipairs(rows) do
-        if row[2] then tt:AddDoubleLine(unpack(row, 1, 8))
+        if row[2] and row[2] ~= "" then tt:AddDoubleLine(unpack(row, 1, 8))
         else tt:AddLine(row[1], row[3], row[4], row[5]) end
     end
     tt:Show()   -- resize to fit the new lines

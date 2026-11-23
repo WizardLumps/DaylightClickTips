@@ -21,6 +21,8 @@ ns.DEFAULTS = {
     hideDefaults = true,  -- hide DaylightUI's default Target / Unit menu clicks
     holdOnly = false,     -- lines only while Shift, Ctrl or Alt is held
     hideCombat = false,   -- no lines in combat
+    allMods = false,      -- every modifier's clicks at once, grouped (no need to hold keys)
+    allNumbers = false,   -- ...with heal amounts, cost and casts left too (off: shorter lines)
     -- Which frames get the lines
     showParty = true, showRaid = true, showPets = true,
     showPlayer = true, showTarget = true, showFocus = true, showOther = true,
@@ -33,6 +35,7 @@ ns.DEFAULTS = {
     colInvalid = { 0.6, 0.6, 0.6 },
     colAmount = { 0.25, 0.88, 0.25 },
     colCost = { 0.37, 0.66, 1 },
+    colHeld = { 0.3, 0.9, 0.3 },   -- the held modifier's group name (Show all modifiers)
 }
 
 local function copy(v)
@@ -100,8 +103,9 @@ local TOGGLES = {
     defaults = { "hideDefaults", "hide default Target / Unit menu clicks" },
     hold = { "holdOnly", "only while holding Shift / Ctrl / Alt" },
     combat = { "hideCombat", "hide in combat" },
+    all = { "allMods", "all modifiers at once" },
 }
-local ORDER = { "tip", "amounts", "cost", "casts", "icons", "rank", "short", "header", "defaults", "hold", "combat" }
+local ORDER = { "tip", "amounts", "cost", "casts", "icons", "rank", "short", "header", "defaults", "hold", "combat", "all" }
 
 SLASH_DAYLIGHTCLICKTIPS1 = "/clicktips"
 SlashCmdList.DAYLIGHTCLICKTIPS = function(msg)

@@ -54,8 +54,24 @@ local function lineItems()
             "The heading over the lines, which also names the Shift / Ctrl / Alt you hold."),
         toggle("hideDefaults", "Hide default clicks",
             "Leave out DaylightUI's standard Left = Target and Right = Unit menu. A click you set yourself for a modifier, like Ctrl + Left = Target, still shows."),
-        toggle("holdOnly", "Only while holding a modifier",
-            "No lines until you hold Shift, Ctrl or Alt."),
+        toggle("allMods", "Show all modifiers",
+            "Every click you've bound, grouped by modifier (Shift, Ctrl, Ctrl + Shift...), without holding any keys. Only sets with something bound show. Holding a modifier brightens its group."),
+        {
+            type = "toggle", label = "Amounts in the full list",
+            desc = "Heal amounts, mana cost and casts left in the all-modifiers list too. Off keeps its lines short.",
+            get = function() return ns.db ~= nil and ns.db.allNumbers == true end,
+            set = function(v) ns.Set("allNumbers", v) end,
+            default = function() return ns.DEFAULTS.allNumbers end,
+            disabled = function() return off() or not ns.db.allMods end,
+        },
+        {
+            type = "toggle", label = "Only while holding a modifier",
+            desc = "No lines until you hold Shift, Ctrl or Alt. (Not with Show all modifiers.)",
+            get = function() return ns.db ~= nil and ns.db.holdOnly == true end,
+            set = function(v) ns.Set("holdOnly", v) end,
+            default = function() return ns.DEFAULTS.holdOnly end,
+            disabled = function() return off() or ns.db.allMods end,
+        },
         toggle("hideCombat", "Hide in combat", "No lines while you're in combat."),
     }
 end
@@ -83,6 +99,7 @@ local function colorItems()
         color("colInvalid", "Invalid target", "The spell can't go on this unit (a heal on an enemy), or can't be cast right now."),
         color("colAmount", "Heal amount", "The heal or absorb amount on the right."),
         color("colCost", "Mana cost and casts left", "The mana cost and casts left on the right."),
+        color("colHeld", "Held modifier", "With Show all modifiers: the name of the group you're holding (the others dim)."),
     }
 end
 

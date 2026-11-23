@@ -15,6 +15,9 @@ Hold a modifier and the lines switch to that set, here Shift for lower ranks:
 
 - One line per mouse button, for the Shift / Ctrl / Alt you're holding right now. Press or
   release a modifier and the lines change.
+- Or turn on **Show all modifiers** to see every click you've bound at once, grouped under
+  its modifier (Shift, Ctrl, Ctrl · Shift...), without holding any keys. Only sets with
+  something bound show, and holding a modifier brightens its group and turns its name green.
 - Spell icons, and colors: **white** ready, **orange** out of range, **red** no mana or on
   cooldown, **grey** invalid target (like a heal on an enemy) or can't be cast right now.
   Every color can be changed.
@@ -36,17 +39,18 @@ In `/dui`: the **ClickTips** plugin page, or **Unit Frames > Click-casting > Too
 - **Tooltip:** click lines, spell icons, heal amounts, mana cost, casts left.
 - **Lines:** spell ranks, short button names (L / R / M / B4 / B5), the "Clicks" heading,
   hide DaylightUI's default Left = Target / Right = Unit menu (a click you set yourself,
-  like Ctrl + Left = Target, still shows), only while holding a modifier, hide in combat.
+  like Ctrl + Left = Target, still shows), show all modifiers (with or without amounts
+  and cost), only while holding a modifier, hide in combat.
 - **Show on:** party, raid, party pets, player, target, focus, other frames, and enemies
   (off by default, so your target frame shows the lines for friends only).
 - **Colors:** ready, out of range, not enough mana, on cooldown, invalid target, heal amount,
-  mana cost.
+  mana cost, held modifier.
 
 ![Heal amounts and mana cost off](docs/screenshots/options-switches-off.png)
 
 Or type `/clicktips` for the list of switches, then `/clicktips <word>` to flip one:
 `tip`, `amounts`, `cost`, `casts`, `icons`, `rank`, `short`, `header`, `defaults`, `hold`,
-`combat`.
+`combat`, `all`.
 
 Settings are account-wide.
 
@@ -63,6 +67,12 @@ MIT (see `LICENSE`). Made by WizardLumps. Not affiliated with DaylightUI; it nee
 DaylightUI installed and holds none of its code or art.
 
 ## Changelog
+- v1.2.3 - New "Show all modifiers" switch (Lines), off by default: every click you've
+  bound, grouped by modifier (Shift, Ctrl, Ctrl · Shift...), without holding any keys. Only
+  sets with something bound show; holding a modifier keeps its group bright with its name
+  in green ("Held modifier" under Colors) and dims the rest. "Amounts in the full list"
+  adds heal amounts and mana cost there too (off by default). `/clicktips all` flips it.
+  An "Action bar key" click (like a Mouse 5 macro) no longer repeats under every modifier.
 - v1.1.1 - New "Enemies too" switch under Show on, off by default: no click lines on enemy
   units, like the mob you're targeting. Release notes on CurseForge now come from CHANGELOG.md.
 - v1.1.0 - Its own icon in the /dui sidebar. New settings: spell icons, casts left, spell ranks, short button names, the
